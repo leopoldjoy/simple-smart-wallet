@@ -5,7 +5,14 @@ libs = ['lib']
 gas_reports = ["*"]
 optimizer = true
 optimizer_runs = 20000
-fs_permissions = [{ access = "read", path = "lib/foundry-chainlink-toolkit/out"}]
+
+solc_version='0.8.20'
+
+[rpc_endpoints]
+sepolia = "https://rpc.sepolia.org"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}", chain = "sepolia", url = "https://api-sepolia.etherscan.io/api" }
 
 # Remappings in remappings.txt
 

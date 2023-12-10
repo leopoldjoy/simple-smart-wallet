@@ -1,5 +1,12 @@
+@source/=contracts/
+@testing/=test/
 @solmate=lib/solmate/src/
 @std=lib/forge-std/src/
 @clones=lib/clones-with-immutable-args/src/
 @chainlink/=lib/chainlink-brownie-contracts/
 forge-std/=lib/forge-std/src/
+@openzeppelin/=lib/openzeppelin-contracts/
+@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable/
+account-abstraction/=lib/account-abstraction/contracts/
+@safe/=lib/safe-contracts/contracts/
+@soulwallet/=lib/soul-wallet-contract/
