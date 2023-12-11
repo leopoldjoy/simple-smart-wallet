@@ -10,7 +10,7 @@ clean  :; forge clean
 # Remove modules
 remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gitmodules && git add . && git commit -m "modules"
 
-install :; forge install smartcontractkit/chainlink-brownie-contracts && forge install rari-capital/solmate && forge install foundry-rs/forge-std
+install :; forge install foundry-rs/forge-std && forge install OpenZeppelin/openzeppelin-contracts-upgradeable && forge install OpenZeppelin/openzeppelin-contracts && forge install SoulWallet/soul-wallet-contract  && forge install SoulWallet/account-abstraction@v0.6.0-with-openzeppelin-v5
 
 # Update Dependencies
 update:; forge update
