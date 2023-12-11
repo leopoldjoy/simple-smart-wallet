@@ -5,6 +5,7 @@ import {Script, console} from "@forge-std/Script.sol";
 import {TestHelpers} from "@testing/helpers/TestHelpers.sol";
 import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
 import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 /**
  * @title DeployBatchedWalletFactory
@@ -21,6 +22,8 @@ import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
  *      USEROP_CALL_DATA_ADDRESS: the address for the callData of the UserOperation
  *      USEROP_CALL_DATA_VALUE: the value (ETH in wei) for the callData of the UserOperation
  *      USEROP_CALL_DATA_CALL_DATA: the callData for the callData of the UserOperation
+ *      USEROP_CALL_DATA_ERC20_TO_ADDRESS: the receiver address to make an ERC-20 transfer to
+ *      USEROP_CALL_DATA_ERC20_AMOUNT: the amount to send to send in an ERC-20 transfer
  *      USEROP_CALL_GAS_LIMIT: the gasLimit for the UserOperation
  *      USEROP_VERIFICATION_GAS_LIMIT: the verificationGasLimit for the UserOperation
  *      USEROP_PREVERIFICATION_GAS: the preverificationGas for the UserOperation
@@ -59,17 +62,28 @@ contract SignUserOpUtil is Script, TestHelpers {
         UserOperation memory userOp;
 
         {
-            address sender = vm.envAddress("USEROP_SENDER");
-            uint256 nonce = vm.envUint("USEROP_NONCE");
-
-            bytes memory initCode = getOptionalBytesEnvVar("USEROP_INIT_CODE");
-
             address callDataToken = getOptionalAddressEnvVar("USEROP_CALL_DATA_ADDRESS");
             uint256 callDataValue = getOptionalUint256EnvVar("USEROP_CALL_DATA_VALUE");
             bytes memory callDataCallData = getOptionalBytesEnvVar("USEROP_CALL_DATA_CALL_DATA");
 
+            bytes memory tokenCallDataERC20;
+            if (callDataCallData.length == 0) {
+                address callData2Address = getOptionalAddressEnvVar("USEROP_CALL_DATA_ERC20_TO_ADDRESS");
+                uint256 callData2Amount = getOptionalUint256EnvVar("USEROP_CALL_DATA_ERC20_AMOUNT");
+                if (callData2Address != address(0) && callData2Amount > 0) {
+                    tokenCallDataERC20 = abi.encodeWithSelector(
+                        ERC20Mock(callDataToken).transfer.selector,
+                        callData2Address,
+                        callData2Amount
+                    );
+                }
+            }
+
             bytes memory callData = abi.encodeWithSignature(
-                "execute(address,uint256,bytes)", callDataToken, callDataValue, callDataCallData
+                "execute(address,uint256,bytes)",
+                callDataToken,
+                callDataValue,
+                ((tokenCallDataERC20.length > 0) ? tokenCallDataERC20 : callDataCallData)
             );
 
             uint256 callGasLimit = getOptionalUint256EnvVar("USEROP_CALL_GAS_LIMIT");
@@ -102,20 +116,22 @@ contract SignUserOpUtil is Script, TestHelpers {
                 }
             }
 
-            bytes memory signature;
-            userOp = UserOperation(
-                sender,
-                nonce,
-                initCode,
-                callData,
-                callGasLimit,
-                verificationGasLimit,
-                preVerificationGas,
-                maxFeePerGas,
-                maxPriorityFeePerGas,
-                paymasterAndData,
-                signature
-            );
+            {
+                bytes memory signature;
+                userOp = UserOperation(
+                    vm.envAddress("USEROP_SENDER"),
+                    vm.envUint("USEROP_NONCE"),
+                    getOptionalBytesEnvVar("USEROP_INIT_CODE"),
+                    callData,
+                    callGasLimit,
+                    verificationGasLimit,
+                    preVerificationGas,
+                    maxFeePerGas,
+                    maxPriorityFeePerGas,
+                    paymasterAndData,
+                    signature
+                );
+            }
         }
 
         /* solhint-disable no-console */

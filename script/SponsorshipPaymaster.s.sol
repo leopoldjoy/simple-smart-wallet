@@ -29,7 +29,7 @@ contract DeploySponsorshipPaymaster is Script {
         if (owner == address(0)) {
             revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_NO_OWNER_DEFINED();
         }
-        address walletFactory = vm.envAddress("WALLET_FACTORY_ADDRESS");
+        address walletFactory = vm.envAddress("FACTORY_ADDRESS");
         if (walletFactory == address(0)) {
             revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_NO_FACTORY_ADDRESS_DEFINED();
         }

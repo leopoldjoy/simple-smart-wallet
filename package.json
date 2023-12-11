@@ -25,13 +25,6 @@
     "snapshot": "make snapshot",
     "format": "make format",
     "lint": "make lint",
-    "all": "make all",
-    "slither": "slither ./contracts/",
-    "deploy:sepolia:batchedwalletfactory": "make deploy-sepolia contract=BatchedWalletFactory",
-    "deploy:sepolia:erc20mock": "make deploy-sepolia contract=ERC20Mock",
-    "deploy:sepolia:bundlermock": "make deploy-sepolia contract=BundlerMock",
-    "deploy:sepolia:sponsorshippaymaster": "make deploy-sepolia contract=SponsorshipPaymaster",
-    "deploy:sepolia:batchedwallet": "make deploy-sepolia contract=BatchedWallet",
-    "sign:userop": "make sign-user-op-util"
+    "all": "make all"
   }
 }
