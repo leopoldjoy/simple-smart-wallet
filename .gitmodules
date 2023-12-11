@@ -16,3 +16,6 @@
 [submodule "lib/soul-wallet-contract"]
 	path = lib/soul-wallet-contract
 	url = https://github.com/SoulWallet/soul-wallet-contract
+[submodule "lib/account-abstraction"]
+	path = lib/account-abstraction
+	url = https://github.com/SoulWallet/account-abstraction
