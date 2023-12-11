@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Script.sol";
+import {Script} from "@forge-std/Script.sol";
 import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
+import {Errors} from "./Errors.sol";
 
 /**
  * @title DeployBatchedWallet
@@ -18,9 +19,13 @@ contract DeployBatchedWallet is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address owner = vm.envAddress("OWNER_ADDRESS");
-        require(owner != address(0), "no owner defined");
+        if (owner == address(0)) {
+            revert Errors.DEPLOY_BATCHED_WALLET_NO_OWNER_DEFINED();
+        }
         address bwFactoryAddr = vm.envAddress("FACTORY_ADDRESS");
-        require(bwFactoryAddr != address(0), "no factory address defined");
+        if (bwFactoryAddr == address(0)) {
+            revert Errors.DEPLOY_BATCHED_WALLET_NO_FACTORY_ADDRESS_DEFINED();
+        }
         bytes32 salt = vm.envBytes32("SALT");
         vm.startBroadcast(deployerPrivateKey);
 

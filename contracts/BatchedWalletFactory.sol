@@ -11,14 +11,14 @@ import {BatchedWallet} from "@source/BatchedWallet.sol";
  * @dev Complies with the ERC-1967 standard for the proxy storage location
  */
 contract BatchedWalletFactory{
-    BatchedWallet public immutable bwImplementation;
+    BatchedWallet public immutable BATCHED_WALLET_IMPLEMENTATION;
 
     /**
      * @dev Constructs the BatchedWalletFactory contract
      * @param entryPoint The address of the entryPoint to be associated with this BatchedWalletFactory
      */
     constructor(address entryPoint) {
-        bwImplementation = new BatchedWallet(entryPoint);
+        BATCHED_WALLET_IMPLEMENTATION = new BatchedWallet(entryPoint);
     }
 
     /**
@@ -28,8 +28,8 @@ contract BatchedWalletFactory{
 
     /**
      * @notice Creates a BatchedWallet and returns it
-     * @dev The address is returned even if the wallet is deployed already, this is so that the entryPoint.getSenderAddress()
-     * function would work even after the wallet has been created.
+     * @dev The address is returned even if the wallet is deployed already, this is so that the
+     * entryPoint.getSenderAddress() function would work even after the wallet has been created.
      * @param owner The address that should be the initial owner of the new BatchedWallet
      * @param salt A bytes32 salt hash used to generate the new (or existing) wallet address
      * @return bw The newly created BatchWallet (or the existing one if it already exists)
@@ -39,11 +39,11 @@ contract BatchedWalletFactory{
         if (walletAddress.code.length > 0) {
             return BatchedWallet(payable(walletAddress));
         }
+        emit BatchedWalletCreation(address(bw));
         bw = BatchedWallet(payable(new ERC1967Proxy{salt: salt}(
-            address(bwImplementation),
+            address(BATCHED_WALLET_IMPLEMENTATION),
             abi.encodeCall(BatchedWallet.initialize, (owner))
         )));
-        emit BatchedWalletCreation(address(bw));
     }
 
     /**
@@ -58,7 +58,7 @@ contract BatchedWalletFactory{
         bw = Create2.computeAddress(salt, keccak256(abi.encodePacked(
             type(ERC1967Proxy).creationCode,
             abi.encode(
-                address(bwImplementation),
+                address(BATCHED_WALLET_IMPLEMENTATION),
                 abi.encodeCall(BatchedWallet.initialize, (owner))
             )
         )));

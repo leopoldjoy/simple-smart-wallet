@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.18;
 
-import "account-abstraction/core/BasePaymaster.sol";
-import "account-abstraction/interfaces/UserOperation.sol";
-import "account-abstraction/interfaces/IEntryPoint.sol";
+import {BasePaymaster} from "@account-abstraction/core/BasePaymaster.sol";
+import {UserOperation, UserOperationLib} from "@account-abstraction/interfaces/UserOperation.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
 import {Errors} from "./helper/Errors.sol";
 
 /**
@@ -25,7 +25,7 @@ contract SponsorshipPaymaster is BasePaymaster {
     // single user operation.
     uint256 public constant MAX_ALLOWED_SPONSOR_AMOUNT = 0.1 ether;
 
-    address public immutable walletFactory;
+    address public immutable WALLET_FACTORY;
 
     /**
      * @dev Emitted when the costs of a UserOperation has been sponsored
@@ -36,14 +36,16 @@ contract SponsorshipPaymaster is BasePaymaster {
      * @dev Constructs the SponsorshipPaymaster contract
      * @param entryPoint The address of the entryPoint to be associated with this paymaster
      * @param owner The owner of this SponsorshipPaymaster contract
-     * @param walletFactoryAddr The address of the BatchedWalletFactory to be associated with this
+     * @param walletFactory The address of the BatchedWalletFactory to be associated with this
      * paymaster. Note that ONLY BatchedWallets created via this factory will be able to be sponsored.
      */
-    constructor(address entryPoint, address owner, address walletFactoryAddr) BasePaymaster(IEntryPoint(entryPoint), owner) {
-        if (address(walletFactoryAddr) == address(0)) {
+    constructor(address entryPoint, address owner, address walletFactory)
+        BasePaymaster(IEntryPoint(entryPoint), owner)
+    {
+        if (address(walletFactory) == address(0)) {
             revert Errors.PAYMASTER_ENTRY_POINT_ADDRESS_INVALID();
         }
-        walletFactory = walletFactoryAddr;
+        WALLET_FACTORY = walletFactory;
     }
 
     /**
@@ -55,7 +57,12 @@ contract SponsorshipPaymaster is BasePaymaster {
      * @return context Bytes encoded address of the UserOperation sender
      * @return validationResult An integer representing the outcome of the validation (0 represents success)
      */
-    function _validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256 maxCost) internal view override returns (bytes memory context, uint256 validationResult) {
+    function _validatePaymasterUserOp(UserOperation calldata userOp, bytes32, uint256 maxCost)
+        internal
+        view
+        override
+        returns (bytes memory context, uint256 validationResult)
+    {
         // This checks ensures that enough gas has been provided for the postOp function call
         if (userOp.verificationGasLimit <= 30000) {
             revert Errors.PAYMASTER_GAS_TO_LOW_FOR_POSTOP();
@@ -74,7 +81,7 @@ contract SponsorshipPaymaster is BasePaymaster {
             if (maxCost >= MAX_ALLOWED_SPONSOR_AMOUNT) {
                 revert Errors.PAYMASTER_REQUIRED_PREFUND_TOO_LARGE();
             }
-            if (address(bytes20(userOp.initCode)) != walletFactory) {
+            if (address(bytes20(userOp.initCode)) != WALLET_FACTORY) {
                 revert Errors.PAYMASTER_UNKNOWN_WALLET_FACTORY();
             }
         }

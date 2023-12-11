@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Test.sol";
+import {Test} from "@forge-std/Test.sol";
 import {BatchedWallet} from "@source/BatchedWallet.sol";
 import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {EntryPoint} from "account-abstraction/core/EntryPoint.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
+import {EntryPoint} from "@account-abstraction/core/EntryPoint.sol";
+import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {Bundler} from "./Bundler.sol";
 import {TestHelpers} from "@testing/helpers/TestHelpers.sol";
@@ -20,10 +20,10 @@ contract BatchedWalletReceiveEtherTest is Test, TestHelpers {
 
     BatchedWallet public bw;
     BatchedWalletFactory public bwFactory;
-    IEntryPoint entryPoint;
+    IEntryPoint public entryPoint;
     Bundler public bundler;
-    address user = address(12345);
-    bytes32 salt = bytes32(0);
+    address public user = address(12345);
+    bytes32 public salt = bytes32(0);
 
     function setUp() public {
         entryPoint = new EntryPoint();
@@ -31,7 +31,10 @@ contract BatchedWalletReceiveEtherTest is Test, TestHelpers {
         bundler = new Bundler();
     }
 
-    function deploy(string memory addrKeyString) private returns (address payable sender, address walletOwner, uint256 walletOwnerPrivateKey) {
+    function deploy(string memory addrKeyString)
+        private
+        returns (address payable sender, address walletOwner, uint256 walletOwnerPrivateKey)
+    {
         (walletOwner, walletOwnerPrivateKey) = makeAddrAndKey(addrKeyString);
 
         bytes memory initCode;
@@ -90,7 +93,7 @@ contract BatchedWalletReceiveEtherTest is Test, TestHelpers {
         userOperation.signature = signUserOp(entryPoint, userOperation, walletOwnerPrivateKey);
     }
 
-    function test_DeployByFactory() public {
+    function testDeployByFactory() public {
         (address payable sender1, , uint256 walletOwnerPrivateKey1) = deploy("walletOwner1");
         (address sender2, , ) = deploy("walletOwner2");
 

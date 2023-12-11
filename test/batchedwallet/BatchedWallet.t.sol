@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Test.sol";
+import {Test} from "@forge-std/Test.sol";
 import {BatchedWallet} from "@source/BatchedWallet.sol";
 import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -17,9 +15,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 contract BatchedWalletTest is Test {
     BatchedWallet public bw;
-    IEntryPoint entryPoint;
-    address globalUser = makeAddr('globalUser');
-    ERC20Mock erc20mock;
+    IEntryPoint public entryPoint;
+    address public globalUser = makeAddr("globalUser");
+    ERC20Mock public erc20mock;
 
     function setUp() public {
         bytes32 salt = bytes32(0);
@@ -45,7 +43,7 @@ contract BatchedWalletTest is Test {
     }
 
     function testExecute() public {
-        address user = makeAddr('user');
+        address user = makeAddr("user");
 
         vm.startPrank(address(entryPoint));
         bw.execute(user, 0.2 ether, "");
@@ -55,7 +53,7 @@ contract BatchedWalletTest is Test {
     }
 
     function testExecuteFailWithWrongOwner() public {
-        address user = makeAddr('user');
+        address user = makeAddr("user");
 
         vm.startPrank(user);
         vm.expectRevert();
@@ -85,7 +83,7 @@ contract BatchedWalletTest is Test {
         bw.execute(address(erc20mock), 0, funcData);
         assertEq(erc20mock.balanceOf(address(bw)), 3 ether);
 
-        address user = makeAddr('user');
+        address user = makeAddr("user");
         bytes memory transferFuncData = abi.encodeWithSelector(IERC20.transfer.selector, user, 2 ether); 
         bw.execute(address(erc20mock), 0, transferFuncData);
         assertEq(erc20mock.balanceOf(user), 2 ether);
@@ -93,7 +91,7 @@ contract BatchedWalletTest is Test {
     }
 
     function testBatchERC20MintAndTransfer() public{
-        address user = makeAddr('user');
+        address user = makeAddr("user");
 
         address [] memory dest = new address[](2);
         bytes [] memory data = new bytes[](2);
@@ -116,8 +114,8 @@ contract BatchedWalletTest is Test {
     }
 
     function testExecuteBatchWithValuesSet() public{
-        address user = makeAddr('user');
-        address user2 = makeAddr('user2');
+        address user = makeAddr("user");
+        address user2 = makeAddr("user2");
 
         vm.deal(address(bw), 4 ether);
         assertEq(address(bw).balance, 4 ether);

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Script.sol";
+import {Script} from "@forge-std/Script.sol";
 import {SponsorshipPaymaster} from "@source/SponsorshipPaymaster.sol";
+import {Errors} from "./Errors.sol";
 
 /**
  * @title DeploySponsorshipPaymaster
@@ -17,16 +18,24 @@ import {SponsorshipPaymaster} from "@source/SponsorshipPaymaster.sol";
  */
 contract DeploySponsorshipPaymaster is Script {
     // Address of the EntryPoint contract on Sepolia
-    address constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
+    address private constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        require(deployerPrivateKey > 0, "PRIVATE_KEY env var not defined");
+        if (deployerPrivateKey == 0) {
+            revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_PRIVATE_KEY_NOT_DEFINED();
+        }
         address owner = vm.envAddress("OWNER_ADDRESS");
-        require(owner != address(0), "no owner defined");
+        if (owner == address(0)) {
+            revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_NO_OWNER_DEFINED();
+        }
         address walletFactory = vm.envAddress("WALLET_FACTORY_ADDRESS");
-        require(walletFactory != address(0), "walletFactory not provided");
-        require(walletFactory.code.length > 0, "walletFactory must be deployed");
+        if (walletFactory == address(0)) {
+            revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_NO_FACTORY_ADDRESS_DEFINED();
+        }
+        if (walletFactory.code.length == 0) {
+            revert Errors.DEPLOY_SPONSORSHIP_PAYMASTER_FACTORY_CONTRACT_NOT_DEPLOYED();
+        }
         vm.startBroadcast(deployerPrivateKey);
         new SponsorshipPaymaster(ENTRYPOINT, owner, walletFactory);
         vm.stopBroadcast();

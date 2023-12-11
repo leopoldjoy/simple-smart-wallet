@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Test.sol";
+import {Test} from "@forge-std/Test.sol";
 import {Bundler} from "./Bundler.sol";
-import {EntryPoint} from "account-abstraction/core/EntryPoint.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
+import {EntryPoint} from "@account-abstraction/core/EntryPoint.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
+import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {EtherReceiverMock} from "@openzeppelin/contracts/mocks/EtherReceiverMock.sol";
 import {IBatchedWallet} from "@source/interface/IBatchedWallet.sol";
@@ -20,9 +20,9 @@ import {TestHelpers} from "@testing/helpers/TestHelpers.sol";
  */
 contract BatchedWalletExecutionTest is Test, TestHelpers {
     Bundler public bundler;
-    EntryPoint entryPoint;
-    BatchedWalletFactory bwFactory;
-    bytes32 salt = bytes32(0);
+    EntryPoint public entryPoint;
+    BatchedWalletFactory public bwFactory;
+    bytes32 public salt = bytes32(0);
 
     function setUp() public {
         entryPoint = new EntryPoint();
@@ -89,7 +89,7 @@ contract BatchedWalletExecutionTest is Test, TestHelpers {
         userOperation.signature = signUserOp(entryPoint, userOperation, walletOwnerPrivateKey);
     }
 
-    function test_Execute() public {
+    function testExecute() public {
         (address payable sender, address walletOwner, uint256 walletOwnerPrivateKey) = deploy();
 
         ERC20Mock tokenERC20 = new ERC20Mock();
@@ -103,7 +103,8 @@ contract BatchedWalletExecutionTest is Test, TestHelpers {
         {
             address tokenCallAddress = address(tokenERC20);
             uint256 tokenCallValue = 0;
-            bytes memory tokenCallData = abi.encodeWithSelector(tokenERC20.transfer.selector, address(0x111), 0.6 ether);
+            bytes memory tokenCallData
+                = abi.encodeWithSelector(tokenERC20.transfer.selector, address(0x111), 0.6 ether);
 
             {
                 vm.prank(address(0x111));
@@ -143,12 +144,16 @@ contract BatchedWalletExecutionTest is Test, TestHelpers {
                 );
 
                 bundler.post(entryPoint, userOperation);
-                assertEq(ERC20Mock(tokenERC20).balanceOf(address(0x111)), 0.6 ether, "Transfer of token amount failed!");
+                assertEq(
+                    ERC20Mock(tokenERC20).balanceOf(address(0x111)),
+                    0.6 ether,
+                    "Transfer of token amount failed!"
+                );
             }
         }
     }
 
-    function test_ExecuteBatchWithoutValue() public {
+    function testExecuteBatchWithoutValue() public {
         (address payable sender, , uint256 walletOwnerPrivateKey) = deploy();
 
         ERC20Mock tokenERC20 = new ERC20Mock();
@@ -184,13 +189,21 @@ contract BatchedWalletExecutionTest is Test, TestHelpers {
                 );
 
                 bundler.post(entryPoint, userOperation);
-                assertEq(ERC20Mock(tokenERC20).balanceOf(address(0x111)), 0.6 ether, "Transfer of token amount to address #1 failed!");
-                assertEq(ERC20Mock(tokenERC20A).balanceOf(address(0x112)), 0.7 ether, "Transfer of token amount to address #2 failed!");
+                assertEq(
+                    ERC20Mock(tokenERC20).balanceOf(address(0x111)),
+                    0.6 ether,
+                    "Transfer of token amount to address #1 failed!"
+                );
+                assertEq(
+                    ERC20Mock(tokenERC20A).balanceOf(address(0x112)),
+                    0.7 ether,
+                    "Transfer of token amount to address #2 failed!"
+                );
             }
         }
     }
 
-    function test_ExecuteBatchWithZeroValuesSet() public {
+    function testExecuteBatchWithZeroValuesSet() public {
         (address payable sender, , uint256 walletOwnerPrivateKey) = deploy();
 
         ERC20Mock tokenERC20 = new ERC20Mock();
@@ -230,13 +243,21 @@ contract BatchedWalletExecutionTest is Test, TestHelpers {
                 );
                 bundler.post(entryPoint, userOperation);
 
-                assertEq(ERC20Mock(tokenERC20).balanceOf(address(0x111)), 3 ether, "Transfer of token amount to address #1 failed!");
-                assertEq(ERC20Mock(tokenERC20A).balanceOf(address(0x112)), 4 ether, "Transfer of token amount to address #2 failed!");
+                assertEq(
+                    ERC20Mock(tokenERC20).balanceOf(address(0x111)),
+                    3 ether,
+                    "Transfer of token amount to address #1 failed!"
+                );
+                assertEq(
+                    ERC20Mock(tokenERC20A).balanceOf(address(0x112)),
+                    4 ether,
+                    "Transfer of token amount to address #2 failed!"
+                );
             }
         }
     }
 
-    function test_ExecuteBatchWithValuesSet() public {
+    function testExecuteBatchWithValuesSet() public {
         (address payable sender, , uint256 walletOwnerPrivateKey) = deploy();
 
         EtherReceiverMock ethReceiverMock1 = new EtherReceiverMock();

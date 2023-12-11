@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {BaseAccount} from "account-abstraction/core/BaseAccount.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
+import {BaseAccount} from "@account-abstraction/core/BaseAccount.sol";
+import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {TokenCallbackHandler} from "account-abstraction/samples/callback/TokenCallbackHandler.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {TokenCallbackHandler} from "@account-abstraction/samples/callback/TokenCallbackHandler.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -19,7 +16,8 @@ import {Errors} from "@source/helper/Errors.sol";
 /**
  * @title BatchedWallet
  * @notice Manages all smart wallet functionality, including execution, validation and signing
- * @dev Inherits functionality from IBatchedWallet, OwnableUpgradeable, BaseAccount, UUPSUpgradeable and TokenCallbackHandler
+ * @dev Inherits functionality from IBatchedWallet, OwnableUpgradeable, BaseAccount, UUPSUpgradeable
+ * and TokenCallbackHandler
  */
 contract BatchedWallet is
     IBatchedWallet,
@@ -31,7 +29,7 @@ contract BatchedWallet is
     using MessageHashUtils for bytes32;
     using ECDSA for bytes32;
 
-    IEntryPoint private immutable entryPointVar;
+    IEntryPoint private immutable ENTRY_POINT;
 
     // Mapping keeping track of all message hashes that have been approved ("signed")
     mapping(bytes32 => bool) public signedMessages;
@@ -43,7 +41,7 @@ contract BatchedWallet is
     bytes4 internal constant EIP1271_INVALID_ID = 0xffffffff;
 
     modifier onlyEntryPoint() {
-        if (msg.sender != address(entryPointVar)) {
+        if (msg.sender != address(ENTRY_POINT)) {
             revert Errors.NON_ENTRY_POINT_CALLER();
         }
         _;
@@ -54,7 +52,7 @@ contract BatchedWallet is
      * @param bwEntryPoint The address of the entryPoint to be associated with this BatchedWallet
      */
     constructor(address bwEntryPoint) {
-        entryPointVar = IEntryPoint(bwEntryPoint);
+        ENTRY_POINT = IEntryPoint(bwEntryPoint);
         _disableInitializers();
     }
 
@@ -62,14 +60,14 @@ contract BatchedWallet is
     receive() external payable {}
 
     /**
-     * @dev To reduce gas cost, the entryPointVar member is immutable. To upgrade the entryPointVar,
-     * a new implementation of BatchedWallet must be deployed with the new entryPointVar, then the
+     * @dev To reduce gas cost, the ENTRY_POINT member is immutable. To upgrade the ENTRY_POINT,
+     * a new implementation of BatchedWallet must be deployed with the new ENTRY_POINT, then the
      * implementation may be upgraded by calling `upgradeToAndCall()`.
      * @param walletOwner Initial owner of this BatchedWallet
      */
     function initialize(address walletOwner) public initializer {
         __Ownable_init(walletOwner);
-        emit BatchedWalletInitialized(entryPointVar, owner());
+        emit BatchedWalletInitialized(ENTRY_POINT, owner());
     }
 
     /**
@@ -108,7 +106,11 @@ contract BatchedWallet is
      * @param value The array of value (ETH amounts) to be included with each execution
      * @param data The array of encoded call-data bytes for each execution
      */
-    function executeBatch(address[] calldata dest, uint256[] calldata value, bytes[] calldata data) external override onlyEntryPoint {
+    function executeBatch(address[] calldata dest, uint256[] calldata value, bytes[] calldata data)
+        external
+        override
+        onlyEntryPoint
+    {
         _executeBatch(dest, value, data);
     }
 
@@ -147,6 +149,7 @@ contract BatchedWallet is
      * @param data The encoded call-data for the execution
      */
     function _call(address dest, uint256 value, bytes memory data) private {
+        // solhint-disable-next-line no-inline-assembly
         assembly ("memory-safe") { // Gas savings by switching to assembly
             let result := call(gas(), dest, value, add(data, 0x20), mload(data), 0, 0)
             if iszero(result) {
@@ -162,7 +165,7 @@ contract BatchedWallet is
      * @return _entryPoint The IEntryPoint representing the entry point associaated with this BatchedWallet contract
      */
     function entryPoint() public view override returns (IEntryPoint _entryPoint) {
-        _entryPoint = entryPointVar;
+        _entryPoint = ENTRY_POINT;
     }
 
     /**
@@ -175,7 +178,12 @@ contract BatchedWallet is
      * failure (returned via the SIG_VALIDATION_FAILED constant defined in the BaseAccount contract),
      * see the BaseAccount documentation for additional details
      */
-    function _validateSignature(UserOperation calldata userOp, bytes32 userOpHash) internal override virtual returns (uint256 validationData) {
+    function _validateSignature(UserOperation calldata userOp, bytes32 userOpHash)
+        internal
+        override
+        virtual
+        returns (uint256 validationData)
+    {
         try this.checkSignature(
             userOpHash,
             userOp
@@ -197,7 +205,12 @@ contract BatchedWallet is
      * signatures (these constants are defined above and are in compliance with the EIP-1271 spec),
      * see the EIP-1271 spec for more details: https://eips.ethereum.org/EIPS/eip-1271
      */
-    function isValidSignature(bytes32 hash, bytes calldata signature) external view override returns (bytes4 magicValue) {
+    function isValidSignature(bytes32 hash, bytes calldata signature)
+        external
+        view
+        override
+        returns (bytes4 magicValue)
+    {
         if (signature.length == 0) {
             if(signedMessages[hash.toEthSignedMessageHash()]) {
                 return EIP1271_SELECTOR;
@@ -208,6 +221,7 @@ contract BatchedWallet is
                 signature
             ){
                 return EIP1271_SELECTOR;
+            // solhint-disable-next-line no-empty-blocks
             } catch {}
         }
         return EIP1271_INVALID_ID;
@@ -266,12 +280,13 @@ contract BatchedWallet is
      * @return hash The resulting bytes32 hash of the combined UserOperation fields
      */
     function getUserOpHash(UserOperation memory userOp) private view returns (bytes32 hash) {
-        hash = entryPointVar.getUserOpHash(userOp).toEthSignedMessageHash();
+        hash = ENTRY_POINT.getUserOpHash(userOp).toEthSignedMessageHash();
     }
 
     /**
      * @notice Verifies if msg.sender is authorized to upgrade this contract
      * @dev See the UUPSUpgradeable contract for more details on this.
      */
+    // solhint-disable-next-line no-empty-blocks
     function _authorizeUpgrade(address) internal view override onlyOwner {}
 }

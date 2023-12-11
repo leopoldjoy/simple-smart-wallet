@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Script.sol";
+import {Script, console} from "@forge-std/Script.sol";
 import {TestHelpers} from "@testing/helpers/TestHelpers.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
+import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
 
 /**
  * @title DeployBatchedWalletFactory
@@ -30,27 +30,30 @@ import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
  */
 contract SignUserOpUtil is Script, TestHelpers {
     // Address of the EntryPoint contract on Sepolia
-    address constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
+    address private constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
 
     function getOptionalUint256EnvVar(string memory envVar) private view returns (uint256 result) {
         try vm.envUint(envVar) returns (uint256 _result) {
             result = _result;
+        // solhint-disable-next-line no-empty-blocks
         } catch {}
     }
 
     function getOptionalBytesEnvVar(string memory envVar) private view returns (bytes memory result) {
         try vm.envBytes(envVar) returns (bytes memory _result) {
             result = _result;
+        // solhint-disable-next-line no-empty-blocks
         } catch {}
     }
 
     function getOptionalAddressEnvVar(string memory envVar) private view returns (address result) {
         try vm.envAddress(envVar) returns (address _result) {
             result = _result;
+        // solhint-disable-next-line no-empty-blocks
         } catch {}
     }
 
-    function run() view external {
+    function run() external view {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         UserOperation memory userOp;
@@ -115,6 +118,7 @@ contract SignUserOpUtil is Script, TestHelpers {
             );
         }
 
+        /* solhint-disable no-console */
         console.log("SIGNATURE RESULTING FROM USEROP:");
         console.logBytes(signUserOp(IEntryPoint(ENTRYPOINT), userOp, deployerPrivateKey));
         console.log("");
@@ -139,5 +143,6 @@ contract SignUserOpUtil is Script, TestHelpers {
         console.log(userOp.maxPriorityFeePerGas);
         console.log("paymasterAndData:");
         console.logBytes(userOp.paymasterAndData);
+        /* solhint-enable no-console */
     }
 }

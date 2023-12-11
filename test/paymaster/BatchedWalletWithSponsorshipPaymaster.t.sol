@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Test.sol";
+import {Test} from "@forge-std/Test.sol";
 import {Bundler} from "@testing/batchedwallet/Bundler.sol";
-import {EntryPoint} from "account-abstraction/core/EntryPoint.sol";
-import {IEntryPoint} from "account-abstraction/interfaces/IEntryPoint.sol";
-import {UserOperation} from "account-abstraction/interfaces/UserOperation.sol";
+import {EntryPoint} from "@account-abstraction/core/EntryPoint.sol";
+import {IEntryPoint} from "@account-abstraction/interfaces/IEntryPoint.sol";
+import {UserOperation} from "@account-abstraction/interfaces/UserOperation.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
-import {EtherReceiverMock} from "@openzeppelin/contracts/mocks/EtherReceiverMock.sol";
-import {IBatchedWallet} from "@source/interface/IBatchedWallet.sol";
 import {BatchedWallet} from "@source/BatchedWallet.sol";
 import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
-import {Errors} from "@source/helper/Errors.sol";
 import {TestHelpers} from "@testing/helpers/TestHelpers.sol";
 import {SponsorshipPaymaster} from "@source/SponsorshipPaymaster.sol";
 
@@ -22,9 +19,9 @@ import {SponsorshipPaymaster} from "@source/SponsorshipPaymaster.sol";
  */
 contract BatchedWalletWithSponsorshipPaymasterTest is Test, TestHelpers {
     Bundler public bundler;
-    EntryPoint entryPoint;
-    BatchedWalletFactory bwFactory;
-    bytes32 salt = bytes32(0);
+    EntryPoint public entryPoint;
+    BatchedWalletFactory public bwFactory;
+    bytes32 public salt = bytes32(0);
 
     function setUp() public {
         entryPoint = new EntryPoint();
@@ -32,9 +29,10 @@ contract BatchedWalletWithSponsorshipPaymasterTest is Test, TestHelpers {
         bundler = new Bundler();
     }
 
-    function test_DeployUsingSponsorshipPaymaster() public {
+    function testDeployUsingSponsorshipPaymaster() public {
         address paymasterOwner = makeAddr("paymasterOwner");
-        SponsorshipPaymaster paymaster = new SponsorshipPaymaster(address(entryPoint), paymasterOwner, address(bwFactory));
+        SponsorshipPaymaster paymaster
+            = new SponsorshipPaymaster(address(entryPoint), paymasterOwner, address(bwFactory));
 
         (address walletOwner, uint256 walletOwnerPrivateKey) = makeAddrAndKey("walletOwner");
 
@@ -101,9 +99,10 @@ contract BatchedWalletWithSponsorshipPaymasterTest is Test, TestHelpers {
         userOperation.signature = signUserOp(entryPoint, userOperation, walletOwnerPrivateKey);
     }
 
-    function test_TransferERC20UsingSponsorshipPaymaster() public {
+    function testTransferERC20UsingSponsorshipPaymaster() public {
         address paymasterOwner = makeAddr("paymasterOwner");
-        SponsorshipPaymaster paymaster = new SponsorshipPaymaster(address(entryPoint), paymasterOwner, address(bwFactory));
+        SponsorshipPaymaster paymaster
+            = new SponsorshipPaymaster(address(entryPoint), paymasterOwner, address(bwFactory));
 
         (address walletOwner, uint256 walletOwnerPrivateKey) = makeAddrAndKey("walletOwner");
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Script.sol";
+import {Script} from "@forge-std/Script.sol";
 import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
 
 /**
@@ -14,7 +14,7 @@ import {BatchedWalletFactory} from "@source/BatchedWalletFactory.sol";
  */
 contract DeployBatchedWalletFactory is Script {
     // Address of the EntryPoint contract on Sepolia
-    address constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
+    address private constant ENTRYPOINT = 0x0576a174D229E3cFA37253523E645A78A0C91B57;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "forge-std/Script.sol";
+import {Script} from "@forge-std/Script.sol";
 import {BundlerMock} from "@source/mock/BundlerMock.sol";
 
 /**
