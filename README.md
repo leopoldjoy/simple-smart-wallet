@@ -52,8 +52,8 @@ There are many areas where the BatchedWallet contracts can be improved. The list
 
 Please install the following:
 
--   [Make](https://askubuntu.com/questions/161104/how-do-i-install-make)  
 -   [Foundry / Foundryup](https://github.com/gakonst/foundry)
+-   [Make](https://askubuntu.com/questions/161104/how-do-i-install-make)
 -   [Solhint](https://github.com/protofire/solhint) (ensure that you have it installed globally)
 -   [Python](https://www.python.org/downloads/) (if you want to use Slither)
 -   [Slither](https://github.com/crytic/slither#how-to-install) (optional)
@@ -63,17 +63,12 @@ Please install the following:
 ```sh
 git clone https://github.com/leopoldjoy/simple-smart-wallet
 cd simple-smart-wallet
-make # This installs the project's dependencies.
-make test
+forge install
+forge test
 ```
 
 ## Testing
 
-```
-make test
-```
-
-or
 
 ```
 forge test
